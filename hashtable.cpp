@@ -108,3 +108,40 @@ void hm_insert(HMap *hmap, HNode *node) {
     hm_help_rehashing(hmap);        // migrate some keys
 }
 
+void hm_foreach(HMap *hmap,bool (*cb_keys)(HNode *,void *),void *out){
+    size_t i=0;
+    size_t nsize=hmap->newer.size;
+    size_t osize=hmap->older.size;
+    while(nsize>0){
+        HNode *node=hmap->newer.tab[i];
+        if(!node){
+            i++;
+            continue;
+        }
+        while(node!=NULL){
+            cb_keys(node,out);
+            node=node->next;
+            nsize--;
+        }
+        i++;
+    }
+    i=0;
+    while(osize>0){
+        HNode *node=hmap->older.tab[i];
+        if(!node){
+            i++;
+            continue;
+        }
+        while(node!=NULL){
+            cb_keys(node,out);
+            node=node->next;
+            osize--;
+        }
+        i++;
+    }
+
+}
+
+size_t hm_size(HMap *hmap) {
+    return hmap->newer.size + hmap->older.size;
+}
